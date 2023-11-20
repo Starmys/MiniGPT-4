@@ -219,6 +219,38 @@ class MiniGPT4(Blip2Base):
 
         return {"loss": loss}
 
+    def text_forward(self, samples):
+        self.llama_tokenizer.padding_side = "right"
+
+        text = [t + self.end_sym for t in samples["text_input"]]
+
+        to_regress_tokens = self.llama_tokenizer(
+            text,
+            return_tensors="pt",
+            padding="longest",
+            truncation=True,
+            max_length=self.max_txt_len,
+            add_special_tokens=False
+        ).to('cuda')
+
+        targets = to_regress_tokens.input_ids.masked_fill(
+            to_regress_tokens.input_ids == self.llama_tokenizer.pad_token_id, -100
+        )
+
+        inputs_embeds = self.llama_model.model.embed_tokens(to_regress_tokens.input_ids)
+        attention_mask = to_regress_tokens.attention_mask
+
+        with self.maybe_autocast():
+            outputs = self.llama_model(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attention_mask,
+                return_dict=True,
+                labels=targets,
+            )
+        loss = outputs.loss
+
+        return {"loss": loss}
+
     @classmethod
     def from_config(cls, cfg):
         vit_model = cfg.get("vit_model", "eva_clip_g")

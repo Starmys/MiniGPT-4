@@ -5,7 +5,7 @@ model:
   image_size: 224
   drop_path_rate: 0
   use_grad_checkpoint: False
-  vit_precision: "fp16"
+  vit_precision: "fp32"
   freeze_vit: True
   freeze_qformer: True
 
@@ -13,7 +13,9 @@ model:
   num_query_token: 32
 
   # Vicuna
-  llama_model: "/path/to/vicuna/weights/"
+  llama_model: "/home/chengzhang/Multimodal-Quantization/Multimodal-GPT/checkpoints/llama-7b_hf"
+  # llama_model: "/home/chengzhang/Multimodal-Quantization/MiniGPT-4/checkpoints/vicuna-7b"
+  # llama_model: "/home/chengzhang/Multimodal-Quantization/MiniGPT-4/smooth/vicuna-7b-smoothquant"
 
   # generation configs
   prompt: ""
